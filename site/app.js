@@ -115,13 +115,13 @@ function openOverview(trigger=document.activeElement) {
   current.focus({preventScroll:true});
 }
 
-function closeOverview(index=history().cursor) {
+function closeOverview(index=history().cursor,focusTarget=overviewTrigger) {
   if(busy || !overview) return;
   history().select(index); overview=false;
   stage.classList.remove('overview'); stage.scrollTop=0; close.hidden=true;
   help.replaceChildren('Drag down with one finger or your mouse here.',document.createElement('br'),'The native experiment uses three fingers.');
   arrange(); updateControls();
-  const returnTo=overviewTrigger?.isConnected && !overviewTrigger.disabled?overviewTrigger:stage;
+  const returnTo=focusTarget?.isConnected && !focusTarget.disabled?focusTarget:stage;
   returnTo.focus({preventScroll:true});
   overviewTrigger=null;
 }
@@ -167,7 +167,7 @@ browse.addEventListener('click',()=>openOverview(browse));
 close.addEventListener('click',()=>closeOverview());
 document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
   if(busy) return;
-  if(overview) closeOverview();
+  if(overview) closeOverview(history().cursor,button);
   mode=button.dataset.mode; render();
 }));
 watch.addEventListener('click',async()=>{

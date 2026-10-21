@@ -41,3 +41,5 @@ The Threefold landing page was inspected in the in-app browser at desktop and mo
 The landing page also passed 320 px and 390 px overflow/image checks. All preview images loaded. Desktop primary actions were visible at the tested 1280 × 900 viewport.
 
 The `ThreeFingerGesture` unit checks cover the earlier editable study. The published sketch intentionally uses a separate one-pointer handler, with the shared history/direction/release decisions. Its drag and gentle release were tested through browser input. A review finding about focus entering the overview was corrected by focusing the current card on entry and returning focus to the enabled trigger on close.
+
+Final keyboard checks exercised both stack entry controls, Escape, the close control, and switching appearance while the overview was open. Focus entered the current card, returned to Browse or Watch on ordinary close, and stayed on the selected appearance after a mode change.
