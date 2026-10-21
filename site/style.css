@@ -23,4 +23,7 @@ h1{font-size:clamp(60px,5.8vw,78px)}
 @media(max-width:1050px){.hero{gap:30px;grid-template-columns:1fr 1fr}.preview{padding:17px 20px}.preview-top{gap:6px}.preview-top .eyebrow{max-width:115px}h1{font-size:62px}}
 @media(max-width:680px){.masthead{height:73px}.hero{display:flex;gap:25px;padding-top:12px}.hero-copy{padding-top:0}h1{font-size:clamp(44px,13.5vw,55px);letter-spacing:-2.6px;margin:16px 0}.intro{font-size:18px;line-height:1.5;margin-bottom:14px}.hero-copy>.explanation,.hero-copy>.small-note{display:none}.hero-actions{margin-top:18px}.preview{max-width:390px;padding:17px 18px 14px;border-radius:27px}.preview-top .eyebrow{max-width:135px}.stage{width:min(100%,306px);border-radius:31px}.preview-card{border-radius:29px}.preview-controls button,.preview-actions button{font-size:11px}.preview-actions{gap:22px}.preview-help{font-size:10px}}
 .hero-actions+.explanation{margin-top:23px}
+.drag-status{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);z-index:24;width:max-content;max-width:90%;padding:8px 13px;border:1px solid #ffffff30;border-radius:22px;background:#20231eef;box-shadow:0 4px 18px #0003;color:#fff;font-size:10px;line-height:1.4;text-align:center;pointer-events:none;opacity:0;transition:opacity .12s}
+.dragging .drag-status:not(:empty){opacity:1}
+.stage[data-intent=overview] .drag-status{border-color:#e7c5b3;color:#ffe0c8}
 @media(max-width:680px){.hero-copy>.intro,.hero-actions>.text-link{display:none}.hero-actions{margin-top:8px}.hero{gap:20px}}

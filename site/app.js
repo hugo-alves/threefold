@@ -1,4 +1,5 @@
-import {SessionHistory, historyStep, shouldCommit, shouldOpenOverview, cardScaleAt, defaultSettings} from './history.js';
+import {SessionHistory, historyStep, cardScaleAt, defaultSettings} from './history.js';
+import {PreviewDrag, dragSettings, dragOutcome} from './drag.js';
 import {galleries} from './gallery.js';
 
 const stage = document.querySelector('#stage');
@@ -11,6 +12,9 @@ const browse = document.querySelector('#browse');
 const close = document.querySelector('#close-stack');
 const help = document.querySelector('#preview-help');
 const demoLabel = document.querySelector('#demo-label');
+const dragHint = document.querySelector('#drag-hint');
+const dragStatus = document.querySelector('#drag-status');
+const idleHint = 'Swipe to switch. Drag, pause, then release to browse.';
 const histories = Object.fromEntries(Object.entries(galleries).map(([key, entries]) => [key,new SessionHistory(entries.map(([id])=>id))]));
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 let mode = 'chats';
@@ -46,7 +50,7 @@ function arrange(distance=0) {
   const height = stage.clientHeight;
   const step = historyStep(distance);
   const dy = distance && !history().destination(step) ? distance * .17 : distance;
-  const scale = cardScaleAt(dy,height);
+  const scale = cardScaleAt(dy,height,{...defaultSettings,overviewDistance:(height+defaultSettings.cardSpacing)*.4});
   const stride = height * scale + defaultSettings.cardSpacing;
   cardElements.forEach((element,index) => {
     const relative = index-history().cursor;
@@ -153,32 +157,58 @@ function closeOverview(index=history().cursor,focusTarget=overviewTrigger) {
   if(busy || !overview) return;
   history().select(index); overview=false;
   stage.classList.remove('overview'); stage.scrollTop=0; close.hidden=true;
-  help.replaceChildren('Drag down with one finger or your mouse here.',document.createElement('br'),'The native experiment uses three fingers.');
+  help.replaceChildren(dragHint,document.createElement('br'),'One finger or mouse here. Three fingers in the native app.');
+  dragHint.textContent=idleHint;
   arrange(); updateControls();
   const returnTo=focusTarget?.isConnected && !focusTarget.disabled?focusTarget:stage;
   returnTo.focus({preventScroll:true});
   overviewTrigger=null;
 }
 
+function updateDragHint() {
+  if(!drag) return;
+  const sample=drag.track.sample(performance.now());
+  const outcome=dragOutcome(sample,drag.settings);
+  const step=historyStep(sample.distance);
+  const target=history().destination(step);
+  stage.dataset.intent=outcome;
+  if(outcome==='overview') dragHint.textContent='Release to browse the stack';
+  else if(!target && Math.abs(sample.distance)>12) dragHint.textContent=step<0?'You’re at the oldest conversation':'You’re at the newest conversation';
+  else if(Math.abs(sample.distance)>=drag.settings.overviewStart && Math.abs(sample.distance)<=drag.settings.overviewEnd) dragHint.textContent='Release to switch · pause to browse';
+  else if(outcome==='switch') dragHint.textContent=`Release to open ${title(target)}`;
+  else dragHint.textContent=idleHint;
+  dragStatus.textContent=dragHint.textContent;
+}
+
 stage.addEventListener('pointerdown',event=>{
-  if(busy || overview || event.button!==0) return;
-  drag={id:event.pointerId,y:event.clientY,lastY:event.clientY,time:event.timeStamp,velocity:0,dy:0};
+  if(busy || overview || event.button!==0 || drag) return;
+  const settings=dragSettings(stage.clientWidth,stage.clientHeight);
+  drag={id:event.pointerId,track:new PreviewDrag(event.clientY,event.timeStamp),settings,dy:0,pauseTimer:null};
+  dragStatus.textContent='';
   stage.setPointerCapture(event.pointerId); stage.classList.add('dragging');
 });
 stage.addEventListener('pointermove',event=>{
   if(!drag || event.pointerId!==drag.id) return;
-  drag.velocity=(event.clientY-drag.lastY)/Math.max(1,event.timeStamp-drag.time)*1000;
-  drag.lastY=event.clientY; drag.time=event.timeStamp; drag.dy=event.clientY-drag.y;
+  drag.track.move(event.clientY,event.timeStamp);
+  const progress=Math.max(-1.04,Math.min(1.04,drag.track.distance/drag.settings.travel));
+  drag.dy=progress*(stage.clientHeight+defaultSettings.cardSpacing);
   arrange(drag.dy);
+  updateDragHint();
+  clearTimeout(drag.pauseTimer);
+  drag.pauseTimer=setTimeout(updateDragHint,Math.max(0,drag.settings.pause-drag.track.sample(event.timeStamp).heldFor)+16);
 });
 async function release(event,cancelled=false) {
   if(!drag || event.pointerId!==drag.id) return;
-  const {dy,time,velocity}=drag;
+  const {dy,track,settings,pauseTimer}=drag;
+  const sample=track.sample(event.timeStamp);
+  const outcome=cancelled?'cancel':dragOutcome(sample,settings);
+  clearTimeout(pauseTimer);
   drag=null; stage.classList.remove('dragging');
-  const speed=event.timeStamp-time>100?0:velocity;
-  const step=historyStep(dy);
-  if(!cancelled && shouldOpenOverview(dy,speed,stage.clientHeight)) { openOverview(); return; }
-  const commit=!cancelled && shouldCommit(dy,speed,stage.clientHeight) && history().destination(step);
+  delete stage.dataset.intent;
+  dragHint.textContent=idleHint;
+  const step=historyStep(sample.distance);
+  if(outcome==='overview') { openOverview(); return; }
+  const commit=outcome==='switch' && history().destination(step);
   busy=true; updateControls();
   await animateTo(commit?-step*(stage.clientHeight+defaultSettings.cardSpacing):0,280,dy);
   if(commit) history().move(step);
@@ -188,7 +218,7 @@ async function release(event,cancelled=false) {
 stage.addEventListener('pointerup',event=>release(event));
 stage.addEventListener('pointercancel',event=>release(event,true));
 stage.addEventListener('lostpointercapture',event=>{ if(drag) release(event,true); });
-window.addEventListener('blur',()=>{ if(introRun) stopIntro(); drag=null; stage.classList.remove('dragging'); arrange(); });
+window.addEventListener('blur',()=>{ if(introRun) stopIntro(); clearTimeout(drag?.pauseTimer); drag=null; stage.classList.remove('dragging'); delete stage.dataset.intent; dragHint.textContent=idleHint; arrange(); });
 stage.addEventListener('keydown',event=>{
   if(event.key==='Escape') { closeOverview(); event.preventDefault(); }
   if(!overview && ['ArrowDown','ArrowUp'].includes(event.key)) {

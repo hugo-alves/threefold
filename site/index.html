@@ -34,11 +34,12 @@
     <div class="stage" id="stage" aria-label="Conversation preview" tabindex="0" aria-describedby="preview-help">
       <div class="cards" id="cards"></div>
       <div class="fingertips" aria-hidden="true"><i></i><i></i><i></i></div>
+      <span class="drag-status" id="drag-status" aria-hidden="true"></span>
       <button type="button" class="close-stack" id="close-stack" hidden>Back to chat</button>
     </div>
     <div class="preview-controls"><button type="button" id="older" aria-label="Older conversation">↓ Older</button><output id="position" aria-live="polite">Maya · 8 / 8</output><button type="button" id="newer" aria-label="Newer conversation">Newer ↑</button></div>
     <div class="preview-actions"><button type="button" id="watch">Show me the gesture</button><button type="button" id="browse">Browse the stack</button></div>
-    <p id="preview-help" class="preview-help">Drag down with one finger or your mouse here.<br>The native experiment uses three fingers.</p>
+    <p id="preview-help" class="preview-help"><span id="drag-hint">Swipe to switch. Drag, pause, then release to browse.</span><br>One finger or mouse here. Three fingers in the native app.</p>
     <noscript><p>The interactive sketch needs JavaScript. You can still <a href="#install">read the native install guide</a>.</p></noscript>
   </div>
 </section>
