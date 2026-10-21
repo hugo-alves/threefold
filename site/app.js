@@ -17,6 +17,7 @@ let overview = false;
 let busy = false;
 let drag = null;
 let cardElements = [];
+let overviewTrigger = null;
 const history = () => histories[mode];
 const title = id => galleries[mode].find(([key])=>key===id)?.[1] ?? '';
 
@@ -97,8 +98,9 @@ async function navigate(step) {
   arrange(); updateControls();
 }
 
-function openOverview() {
+function openOverview(trigger=document.activeElement) {
   if(busy || overview) return;
+  overviewTrigger=[browse,watch].includes(trigger)?trigger:stage;
   overview=true;
   stage.classList.add('overview'); stage.classList.remove('dragging','watching');
   cardElements.forEach((element,index)=>{
@@ -110,6 +112,7 @@ function openOverview() {
   stage.scrollTop=Math.max(0,current.offsetTop-(stage.clientHeight-current.offsetHeight)/2);
   help.textContent='Scroll the cards with one finger. Tap a conversation to open it.';
   updateControls();
+  current.focus({preventScroll:true});
 }
 
 function closeOverview(index=history().cursor) {
@@ -118,6 +121,9 @@ function closeOverview(index=history().cursor) {
   stage.classList.remove('overview'); stage.scrollTop=0; close.hidden=true;
   help.replaceChildren('Drag down with one finger or your mouse here.',document.createElement('br'),'The native experiment uses three fingers.');
   arrange(); updateControls();
+  const returnTo=overviewTrigger?.isConnected && !overviewTrigger.disabled?overviewTrigger:stage;
+  returnTo.focus({preventScroll:true});
+  overviewTrigger=null;
 }
 
 stage.addEventListener('pointerdown',event=>{
@@ -157,7 +163,7 @@ stage.addEventListener('keydown',event=>{
 });
 older.addEventListener('click',()=>navigate(-1));
 newer.addEventListener('click',()=>navigate(1));
-browse.addEventListener('click',openOverview);
+browse.addEventListener('click',()=>openOverview(browse));
 close.addEventListener('click',()=>closeOverview());
 document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
   if(busy) return;
@@ -169,7 +175,7 @@ watch.addEventListener('click',async()=>{
   busy=true; stage.classList.add('watching'); updateControls();
   const distance=history().destination(-1)?1:-1;
   await animateTo(distance*145,1000);
-  stage.classList.remove('watching'); busy=false; openOverview();
+  stage.classList.remove('watching'); busy=false; openOverview(watch);
 });
 new ResizeObserver(()=>{if(!drag && !busy) arrange();}).observe(stage);
 render();

@@ -2,7 +2,7 @@
 
 21 October 2026. Scope: making the interaction understandable and straightforward to try, with a public source repository and a Small Weird Things website.
 
-## Improvements made before publication
+## Review outcomes
 
 - Named the experiment **Threefold** and added an original icon and distinct iPhone app names. Kept bundle identifiers stable so existing local app state remains compatible.
 - Replaced project-specific sample labels with generic fictional ones.
@@ -11,8 +11,11 @@
 - Added a ZIP-first installation guide with no Terminal dependency, signing steps, Developer Mode, trust prompts, first-use instructions and troubleshooting.
 - Included the ready-to-open Xcode project. Node and XcodeGen are not prerequisites for running the native apps.
 - Added build and model-check automation for both native variants, plus browser model and website build checks.
+- Addressed the automated review’s keyboard-focus finding: the stack receives focus on entry and returns it to its trigger on close. The browser/native verification boundary is documented separately.
 - Kept real accounts, service connections, signing material, device logs, raw reference images and recordings out of the repository.
 - Used a separate catalogue checkout so adding Threefold does not publish unrelated work in the existing Small Weird Things checkout.
+
+The initial review was completed before publication. Automated PR feedback then identified the browser keyboard-focus issue, corrected in an immediate follow-up. The other two review notes concern the documented one-pointer browser model and the public native-source download; both were checked.
 
 ## Explicit limits
 
