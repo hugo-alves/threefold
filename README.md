@@ -4,7 +4,7 @@
 
 An interaction experiment by Hugo Alves, part of [Small Weird Things](https://smallweirdthings.com/).
 
-[Try the browser sketch](https://smallweirdthings.com/threefold/) · [Install on an iPhone](docs/INSTALL.md) · [How it was checked](docs/VERIFICATION.md)
+[Try the browser sketch](https://threefold.isanexperiment.com/) · [Install on an iPhone](docs/INSTALL.md) · [How it was checked](docs/VERIFICATION.md)
 
 A native iPhone experiment: switch between conversations with **three fingers**, or shrink them into a stack you can browse.
 

@@ -38,6 +38,8 @@ These are captures of the prototype with fictional data. Downloaded third-party 
 
 The Threefold landing page was inspected in the in-app browser at desktop and mobile sizes. Older/newer navigation, both appearances, opening the stack, selecting a card and the guided gesture were exercised. A real browser pointer drag showed the shrunken midpoint; a gentle release opened the overview. Sixteen native sample screens were captured from the reviewed simulator builds and inspected as a contact sheet. The website states that its one-finger/mouse sketch does not establish native three-finger or haptic behavior.
 
+The larger landing-page demo was checked at desktop and phone widths on 21 October 2026. Its one-time gesture preview shrinks the current chat and reveals its neighbour without changing the selection or focus. Clicking Older during that preview cancelled it and selected Design friends; opening the stack focused that chat, and switching to Codex kept focus on the appearance button. Emulated reduced motion skipped autoplay and left button navigation working. A 390 × 844 viewport showed the demo on arrival without horizontal overflow.
+
 The landing page also passed 320 px and 390 px overflow/image checks. All preview images loaded. Desktop primary actions were visible at the tested 1280 × 900 viewport.
 
 The `ThreeFingerGesture` unit checks cover the earlier editable study. The published sketch intentionally uses a separate one-pointer handler, with the shared history/direction/release decisions. Its drag and gentle release were tested through browser input. A review finding about focus entering the overview was corrected by focusing the current card on entry and returning focus to the enabled trigger on close.

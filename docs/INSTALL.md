@@ -2,7 +2,7 @@
 
 Threefold is a standalone interaction experiment. It does not add a gesture to the real ChatGPT or WhatsApp apps.
 
-**Just curious? [Try the browser sketch](https://smallweirdthings.com/threefold/#preview).** No installation is needed. It uses one finger or a mouse to explain the movement; the native builds use three fingers and real iOS haptics.
+**Just curious? [Try the browser sketch](https://threefold.isanexperiment.com/#preview).** No installation is needed. It uses one finger or a mouse to explain the movement; the native builds use three fingers and real iOS haptics.
 
 ## What you need
 

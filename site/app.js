@@ -10,6 +10,7 @@ const watch = document.querySelector('#watch');
 const browse = document.querySelector('#browse');
 const close = document.querySelector('#close-stack');
 const help = document.querySelector('#preview-help');
+const demoLabel = document.querySelector('#demo-label');
 const histories = Object.fromEntries(Object.entries(galleries).map(([key, entries]) => [key,new SessionHistory(entries.map(([id])=>id))]));
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 let mode = 'chats';
@@ -18,6 +19,8 @@ let busy = false;
 let drag = null;
 let cardElements = [];
 let overviewTrigger = null;
+let introRun = null;
+let introPlayed = false;
 const history = () => histories[mode];
 const title = id => galleries[mode].find(([key])=>key===id)?.[1] ?? '';
 
@@ -53,7 +56,8 @@ function arrange(distance=0) {
     element.tabIndex = -1;
     element.setAttribute('aria-current',String(relative===0));
   });
-  stage.style.setProperty('--touch-y',`${Math.max(20,Math.min(85,46+dy/height*100))}%`);
+  const touchPosition=introRun?24+dy/height*65:46+dy/height*100;
+  stage.style.setProperty('--touch-y',`${Math.max(20,Math.min(85,touchPosition))}%`);
 }
 
 function render() {
@@ -77,17 +81,47 @@ function render() {
   arrange(); updateControls();
 }
 
-async function animateTo(distance,duration=300,from=0) {
+async function animateTo(distance,duration=300,from=0,isCurrent=()=>true) {
   const start=performance.now();
   return new Promise(resolve=>{
     function frame(now) {
+      if(!isCurrent()) { resolve(false); return; }
       const progress=reduceMotion()?1:Math.min(1,(now-start)/duration);
       const eased=1-Math.pow(1-progress,3);
       arrange(from+(distance-from)*eased);
-      if(progress<1) requestAnimationFrame(frame); else resolve();
+      if(progress<1) requestAnimationFrame(frame); else resolve(true);
     }
     requestAnimationFrame(frame);
   });
+}
+
+function stopIntro() {
+  introPlayed=true;
+  if(!introRun) return;
+  introRun=null;
+  stage.classList.remove('watching');
+  stage.dataset.demo='ready';
+  demoLabel.textContent='Your turn. Try the gesture.';
+  arrange();
+}
+
+async function previewGesture() {
+  if(introPlayed || reduceMotion() || document.hidden || busy || overview || drag) return;
+  introPlayed=true;
+  const run={};
+  introRun=run;
+  stage.dataset.demo='previewing';
+  stage.classList.add('watching');
+  demoLabel.textContent='Three fingers. One way back.';
+  const distance=stage.clientHeight*.4*(history().destination(-1)?1:-1);
+  const isCurrent=()=>introRun===run && !document.hidden && !reduceMotion();
+  // Peek at the neighbouring chat, pause at the shrunken midpoint, and return.
+  // This never changes the selected conversation or moves keyboard focus.
+  if(await animateTo(distance,1000,0,isCurrent)) {
+    await new Promise(resolve=>setTimeout(resolve,350));
+    await animateTo(0,750,distance,isCurrent);
+  }
+  if(introRun===run) stopIntro();
 }
 
 async function navigate(step) {
@@ -154,7 +188,7 @@ async function release(event,cancelled=false) {
 stage.addEventListener('pointerup',event=>release(event));
 stage.addEventListener('pointercancel',event=>release(event,true));
 stage.addEventListener('lostpointercapture',event=>{ if(drag) release(event,true); });
-window.addEventListener('blur',()=>{ drag=null; stage.classList.remove('dragging'); arrange(); });
+window.addEventListener('blur',()=>{ if(introRun) stopIntro(); drag=null; stage.classList.remove('dragging'); arrange(); });
 stage.addEventListener('keydown',event=>{
   if(event.key==='Escape') { closeOverview(); event.preventDefault(); }
   if(!overview && ['ArrowDown','ArrowUp'].includes(event.key)) {
@@ -178,4 +212,26 @@ watch.addEventListener('click',async()=>{
   stage.classList.remove('watching'); busy=false; openOverview(watch);
 });
 new ResizeObserver(()=>{if(!drag && !busy) arrange();}).observe(stage);
+// Any input takes over immediately, including controls while the preview runs.
+document.querySelector('.preview').addEventListener('pointerdown',stopIntro,{capture:true});
+document.querySelector('.preview').addEventListener('keydown',stopIntro,{capture:true});
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden && introRun) stopIntro();
+  else if(!document.hidden) queueIntro();
+});
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',()=>{ if(introRun) stopIntro(); });
 render();
+stage.dataset.demo='ready';
+function queueIntro() {
+  const rect=stage.getBoundingClientRect();
+  if(introPlayed || reduceMotion() || document.hidden || rect.bottom<0 || rect.top>innerHeight*.75) return;
+  // Wait only for the two visible cards, so the first frame has real chat content.
+  const images=cardElements.slice(Math.max(0,history().cursor-1),history().cursor+1).map(card=>card.querySelector('img'));
+  Promise.allSettled(images.map(image=>image.decode())).then(()=>{
+    if(!introPlayed && stage.getBoundingClientRect().top<innerHeight*.75) previewGesture();
+  });
+}
+const introObserver=new IntersectionObserver(entries=>{
+  if(entries.some(entry=>entry.isIntersecting)) queueIntro();
+},{threshold:.35});
+introObserver.observe(stage);
