@@ -1,0 +1,82 @@
+import Foundation
+
+var history = SessionHistory(["A", "B", "C"])
+history.move(-1)
+history.move(-1)
+history.move(-1)
+assert(history.current == "A")
+history.move(1)
+assert(history.entries == ["A", "B", "C"])
+history.visit("D")
+assert(history.entries == ["A", "B", "D"])
+assert(history.destination(1) == nil)
+history.visit("D")
+assert(history.entries.count == 3)
+assert(SwipeDecision.shouldCommit(distance: -120, velocity: 0, height: 600))
+assert(SwipeDecision.shouldCommit(distance: 35, velocity: 800, height: 600))
+assert(!SwipeDecision.shouldCommit(distance: 8, velocity: 1000, height: 600))
+assert(!SwipeDecision.shouldCommit(distance: -130, velocity: 350, height: 600))
+assert(!SwipeDecision.shouldCommit(distance: 40, velocity: 0, height: 600))
+
+var light = GestureSettings()
+light.swipeDistance = 60
+assert(SwipeDecision.shouldCommit(distance: 75, velocity: 0, height: 874, settings: light))
+var deliberate = GestureSettings()
+deliberate.swipeDistance = 150
+deliberate.flickSensitivity = 0.6
+assert(!SwipeDecision.shouldCommit(distance: 75, velocity: 0, height: 874, settings: deliberate))
+assert(!SwipeDecision.shouldCommit(distance: 35, velocity: 800, height: 874, settings: deliberate))
+assert(!SwipeDecision.shouldCommit(distance: -160, velocity: 300, height: 874, settings: light))
+let slow = SwipeDecision.settleDuration(remaining: 700, height: 874, velocity: 0, settings: .init())
+let fast = SwipeDecision.settleDuration(remaining: 700, height: 874, velocity: 1600, settings: .init())
+assert(fast < slow && fast >= 0.12)
+
+// Reopening must restore a cursor in the middle, an empty draft, reading position,
+// a sent message, settings and the dismissed first-use hint as one state.
+let testURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathComponent("state.json")
+let store = PrototypeStore(url: testURL)
+var saved = PrototypeState()
+saved.history.move(-1)
+saved.conversations["swipe"] = .init(draft: "", readingPosition: 238.5, sentMessages: ["A locally saved message"])
+saved.settings = deliberate
+saved.settings.haptics = .off
+saved.hasLearnedGesture = true
+try store.save(saved)
+let reopened = PrototypeStore(url: testURL).load()!
+assert(reopened == saved)
+assert(reopened.history.current == "swipe" && reopened.history.canGoForward)
+assert(reopened.conversations["swipe"]?.draft == "")
+assert(reopened.history.restored(allowing: Set(SampleData.sessions.map(\.id)), fallback: PrototypeState.seedHistory) == reopened.history)
+let removedSession = reopened.history.restored(allowing: ["linkedin", "approaches"], fallback: PrototypeState.seedHistory)
+assert(removedSession.current == "linkedin")
+assert(removedSession.destination(1) == "approaches")
+try FileManager.default.removeItem(at: testURL.deletingLastPathComponent())
+assert(store.load() == nil)
+assert(SampleData.session("swipe").messages.count == 4)
+let defaults = GestureSettings()
+assert(SwipeDecision.historyStep(forTranslation: -100) == 1)
+assert(SwipeDecision.historyStep(forTranslation: 100) == -1)
+assert(SwipeDecision.historyStep(forTranslation: 0) == 0)
+assert(SwipeDecision.shouldOpenOverview(distance: -145, velocity: 0, height: 874, settings: defaults))
+assert(SwipeDecision.shouldOpenOverview(distance: 145, velocity: 250, height: 874, settings: defaults))
+assert(!SwipeDecision.shouldOpenOverview(distance: 40, velocity: 0, height: 874, settings: defaults))
+assert(!SwipeDecision.shouldOpenOverview(distance: 145, velocity: 900, height: 874, settings: defaults))
+assert(!SwipeDecision.shouldOpenOverview(distance: -145, velocity: 300, height: 874, settings: defaults))
+assert(!SwipeDecision.shouldOpenOverview(distance: 700, velocity: 0, height: 874, settings: defaults))
+var disabled = defaults; disabled.overviewEnabled = false
+assert(!SwipeDecision.shouldOpenOverview(distance: 145, velocity: 0, height: 874, settings: disabled))
+var earlier = SessionHistory(["swipe", "approaches"]); earlier.move(-1)
+earlier.includeEarlierSessions(PrototypeState.seedHistory)
+assert(earlier.current == "swipe" && earlier.canGoForward && earlier.entries.count == 8)
+let ordered = earlier.entries
+earlier.select(0); earlier.select(100)
+assert(earlier.cursor == 0 && earlier.entries == ordered)
+let legacy = Data(#"{"history":{"entries":["linkedin","swipe","approaches"],"cursor":2},"conversations":{"approaches":{"draft":"Keep this draft","readingPosition":42,"sentMessages":[]}},"settings":{"swipeDistance":120,"flickSensitivity":1.3,"animationSpeed":0.9,"haptics":"firm"},"hasLearnedGesture":true}"#.utf8)
+let migrated = try JSONDecoder().decode(PrototypeState.self, from: legacy)
+assert(migrated.conversations["approaches"]?.draft == "Keep this draft")
+assert(migrated.settings.swipeDistance == 120 && migrated.settings.haptics == .firm)
+assert(migrated.settings.cardScale == 0.72 && migrated.settings.overviewEnabled && !migrated.hasLearnedOverview)
+let migratedRoundTrip = try JSONDecoder().decode(PrototypeState.self, from: JSONEncoder().encode(migrated))
+assert(migratedRoundTrip == migrated)
+assert(SampleData.session("swipe").activity == .working && SampleData.session("linkedin").activity == .newReply)
+print("History, overview release rules, legacy settings migration and saved-state round-trip checks passed.")

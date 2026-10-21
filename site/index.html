@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Threefold — Three fingers. A different conversation.</title>
+  <meta name="description" content="What if your recent chats were a stack you could hold? Try a three-finger conversation-switching experiment, then run the native iPhone prototypes.">
+  <meta name="theme-color" content="#f6f2e9">
+  <link rel="canonical" href="https://smallweirdthings.com/threefold/">
+  <meta property="og:title" content="Threefold — Three fingers. A different conversation.">
+  <meta property="og:description" content="A small experiment in moving between chats. Try the browser sketch or run the native iPhone prototypes.">
+  <meta property="og:type" content="website"><meta property="og:url" content="https://smallweirdthings.com/threefold/">
+  <meta property="og:image" content="https://smallweirdthings.com/threefold/assets/social-preview.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/icon.png"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the experiment</a>
+<header class="wrap masthead">
+  <a class="wordmark" href="./" aria-label="Threefold home"><img src="assets/icon.png" alt="" width="32" height="32">Threefold<span class="edition">an interaction experiment</span></a>
+  <nav aria-label="Main"><a href="https://smallweirdthings.com/">Small Weird Things <span aria-hidden="true">↗</span></a><a href="https://github.com/hugo-alves/threefold">GitHub <span aria-hidden="true">↗</span></a></nav>
+</header>
+<main id="main">
+<section class="hero wrap" aria-labelledby="title">
+  <div class="hero-copy">
+    <p class="eyebrow">A Small Weird Things experiment</p>
+    <h1 id="title">Three fingers.<br>A different<br><em>conversation.</em></h1>
+    <p class="intro">What if your recent chats were a stack you could hold?</p>
+    <p class="explanation">Swipe with three fingers to move between conversations. Slow down, let go, and browse the stack. Come back to the same draft and the same place.</p>
+    <div class="hero-actions"><a class="button primary" href="#preview">Try the idea <span aria-hidden="true">↓</span></a><a class="text-link" href="#install">Run it on your iPhone <span aria-hidden="true">↗</span></a></div>
+    <p class="small-note">Two native demos. Fictional chats. One new way back.</p>
+  </div>
+  <div class="preview" id="preview">
+    <div class="preview-top"><span class="eyebrow">Try the browser sketch</span><div class="mode-switch" role="group" aria-label="Demo appearance"><button type="button" data-mode="chats" aria-pressed="true">WhatsApp</button><button type="button" data-mode="codex" aria-pressed="false">Codex</button></div></div>
+    <div class="stage" id="stage" aria-label="Conversation preview" tabindex="0" aria-describedby="preview-help">
+      <div class="cards" id="cards"></div>
+      <div class="fingertips" aria-hidden="true"><i></i><i></i><i></i></div>
+      <button type="button" class="close-stack" id="close-stack" hidden>Back to chat</button>
+    </div>
+    <div class="preview-controls"><button type="button" id="older" aria-label="Older conversation">↓ Older</button><output id="position" aria-live="polite">Maya · 8 / 8</output><button type="button" id="newer" aria-label="Newer conversation">Newer ↑</button></div>
+    <div class="preview-actions"><button type="button" id="watch">Show me the gesture</button><button type="button" id="browse">Browse the stack</button></div>
+    <p id="preview-help" class="preview-help">Drag down with one finger or your mouse here.<br>The native experiment uses three fingers.</p>
+    <noscript><p>The interactive sketch needs JavaScript. You can still <a href="#install">read the native install guide</a>.</p></noscript>
+  </div>
+</section>
+<section class="principles wrap" aria-label="The interaction in three moves">
+  <div><span class="step-number">01</span><h2>Switch.</h2><p>Fingers down brings an older chat from above. Fingers up returns to a newer one below.</p></div>
+  <div><span class="step-number">02</span><h2>Hold the thought.</h2><p>The chat shrinks as you drag. Release gently while it is small and the stack stays open.</p></div>
+  <div><span class="step-number">03</span><h2>Find your way back.</h2><p>Browse the cards with one finger. Tap a conversation to return without losing your place.</p></div>
+</section>
+<section class="story wrap" aria-labelledby="why-title">
+  <p class="eyebrow">The question behind it</p>
+  <div class="story-body"><h2 id="why-title">Less visiting the list.<br>More staying in<br><em>the conversation.</em></h2><div><p>I kept moving between chats and wondering why returning had to mean navigating back to a list.</p><p>Threefold is a way to try another answer. It puts the movement on the conversation itself: pull it aside, glimpse where you are going, or stop and see the whole stack.</p><p>It is an experiment to feel on a phone. The distance, shrinking, spring, activity markers and haptics are all adjustable. The point is to find out whether this feels easier.</p><p class="aside">The sketch above uses real prototype screenshots. Its motion runs in the browser; native touch recognition and haptics need the iPhone builds.</p></div></div>
+</section>
+<section class="install wrap" id="install" aria-labelledby="install-title">
+  <div class="section-top"><div><p class="eyebrow">Take it out of the browser</p><h2 id="install-title">Try it on your iPhone.</h2></div><p>A Mac with Xcode 26+.<br>An iPhone with iOS 17+.<br>Your own Apple Account for signing.</p></div>
+  <ol class="install-steps"><li><strong>Get the project.</strong><p><a href="https://github.com/hugo-alves/threefold/archive/refs/heads/main.zip">Download the source ZIP</a> and unzip it, or clone the public repository.</p></li><li><strong>Open it in Xcode.</strong><p>Open <code>native/SessionSwipe.xcodeproj</code>. Choose <code>WhatsAppSwipe</code> for the chat demo or <code>SessionSwipe</code> for Codex.</p></li><li><strong>Sign it and run.</strong><p>Choose your connected iPhone, select your team in Signing &amp; Capabilities, then press Run. Xcode handles the development signing.</p></li><li><strong>Start with a downward swipe.</strong><p>Use three fingers to reveal an older chat. Tap the right-edge indicator whenever you want to open the stack directly.</p></li></ol>
+  <div class="install-bottom"><a class="button primary" href="https://github.com/hugo-alves/threefold/blob/main/docs/INSTALL.md">Full install guide <span aria-hidden="true">↗</span></a><p>No TestFlight build yet. These are standalone prototypes;<br>they do not change your installed WhatsApp or ChatGPT app.</p></div>
+</section>
+<section class="questions wrap" aria-labelledby="questions-title"><h2 id="questions-title">A few useful details.</h2><div>
+  <details><summary>Can I try it without a Mac?</summary><p>Yes: use the browser sketch above to explore the idea. Installing the native builds currently needs Xcode on a Mac. There is no ready-to-install public iPhone package yet.</p></details>
+  <details><summary>Does it use my real chats?</summary><p>No. Both demos contain fictional conversations. Messages you enter, drafts, reading position and settings stay in each app’s local storage. No account or server is involved.</p></details>
+  <details><summary>How do I open the stack?</summary><p>In the native app, drag about a finger-length with three fingers, slow down while the chat is shrunk, then lift gently. A quick flick switches directly. You can also tap the indicator on the right. In the open stack, browse with one finger and tap a card.</p></details>
+  <details><summary>What can I change?</summary><p>Hold the conversation title or tap the stack’s sliders. Seventeen saved controls let you tune card size, spacing, corners, spring, speed, gesture thresholds, indicators, activity, haptics and fingertip dots.</p></details>
+  <details><summary>What about accessibility gestures?</summary><p>With VoiceOver enabled, the native custom three-finger recognizer is disabled. The visible indicator, menus and accessibility actions still offer navigation. iOS Zoom also uses three-finger gestures. The browser sketch has buttons and keyboard controls: Arrow Down for older, Arrow Up for newer, and Escape to leave the stack.</p></details>
+</div></section>
+</main>
+<footer class="wrap"><p>Threefold — a <a href="https://smallweirdthings.com/">Small Weird Things</a> experiment by Hugo Alves.</p><a href="https://github.com/hugo-alves/threefold">Read the code <span aria-hidden="true">↗</span></a><p class="independent">Independent prototype. Not affiliated with OpenAI or WhatsApp.</p></footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>

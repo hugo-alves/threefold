@@ -1,0 +1,27 @@
+name: Checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: node --version
+      - run: npm test
+      - run: npm run build
+  native:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: xcodebuild -version
+      - run: sh scripts/check-models.sh
+      - name: Build both native demos without signing
+        run: |
+          xcodebuild -project native/SessionSwipe.xcodeproj -scheme SessionSwipe -sdk iphonesimulator -configuration Debug -derivedDataPath /tmp/threefold-codex CODE_SIGNING_ALLOWED=NO build
+          xcodebuild -project native/SessionSwipe.xcodeproj -scheme WhatsAppSwipe -sdk iphonesimulator -configuration Debug -derivedDataPath /tmp/threefold-chats CODE_SIGNING_ALLOWED=NO build

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f1f0ec">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Session Swipe — three-finger prototype</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="prototype">
+    <header class="app-header">
+      <div><div class="eyebrow">INTERACTION STUDY</div><h1>Session Swipe<span class="brand-dot"></span></h1></div>
+      <button class="icon-button" id="session-picker" aria-label="Open a session">☰</button>
+    </header>
+    <div class="mode-picker" role="group" aria-label="Conversation context">
+      <button data-mode="work" aria-pressed="true">Work</button>
+      <button data-mode="chats" aria-pressed="false">Chats</button>
+    </div>
+    <div id="stage" class="stage" aria-label="Conversation. Swipe vertically with three fingers to navigate history."></div>
+    <div class="gesture-hint"><span class="finger-dots" aria-hidden="true"><i></i><i></i><i></i></span><span id="gesture-label" role="status">3 fingers · down for older · up for newer</span></div>
+    <nav class="history-controls" aria-label="Session history">
+      <button id="back">↑ <span>Back</span></button>
+      <div id="position" aria-label="Position in session history"></div>
+      <button id="forward"><span>Forward</span> ↓</button>
+    </nav>
+    <div class="footnote"><span class="phone-note">Sample conversations · browser prototype</span><span class="desktop-note">On a phone: 3 fingers. Here: Alt + drag, or use the arrows.</span></div>
+  </main>
+  <dialog id="sessions-dialog">
+    <div class="dialog-heading"><h2>Open a session</h2><button id="close-dialog" class="icon-button" aria-label="Close session list">×</button></div>
+    <p>Pick a conversation to add it to your history.</p>
+    <div id="session-list"></div>
+    <p class="dialog-note">Like a browser, opening another session after going back starts a new path.</p>
+  </dialog>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

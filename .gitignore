@@ -1,0 +1,21 @@
+.build/
+node_modules/
+dist/
+.vercel/
+native/SessionSwipe.xcodeproj/xcuserdata/
+native/SessionSwipe.xcodeproj/project.xcworkspace/xcuserdata/
+.DS_Store
+.build*.log
+DerivedData/
+**/xcuserdata/
+*.xcuserstate
+*.mobileprovision
+*.p12
+*.ipa
+.env
+.env.*
+# Local captures, recordings and device diagnostics are not repository content.
+evidence/
+recordings/
+promotion-site/
+design-qa.md
