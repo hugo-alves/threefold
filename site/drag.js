@@ -1,5 +1,10 @@
 // The web preview is a small phone inside a page: use its rendered size,
 // rather than the native app's full-screen travel distances.
+export function defaultTouchMode(maxTouchPoints, coarsePointer, requested) {
+  if (requested === '1' || requested === '3') return Number(requested);
+  return maxTouchPoints >= 3 && coarsePointer ? 3 : 1;
+}
+
 export function dragSettings(width, height) {
   return {
     travel: Math.min(height * .5, Math.max(120, width * .7)),

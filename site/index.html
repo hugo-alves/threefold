@@ -39,7 +39,8 @@
     </div>
     <div class="preview-controls"><button type="button" id="older" aria-label="Older conversation">↓ Older</button><output id="position" aria-live="polite">Maya · 8 / 8</output><button type="button" id="newer" aria-label="Newer conversation">Newer ↑</button></div>
     <div class="preview-actions"><button type="button" id="watch">Show me the gesture</button><button type="button" id="browse">Browse the stack</button></div>
-    <p id="preview-help" class="preview-help"><span id="drag-hint">Swipe to switch. Drag, pause, then release to browse.</span><br>One finger or mouse here. Three fingers in the native app.</p>
+    <div class="touch-controls" id="touch-controls" role="group" aria-label="Touch gesture" hidden><span>Touch</span><button type="button" data-fingers="1" aria-pressed="true">1 finger</button><button type="button" data-fingers="3" aria-pressed="false">3 fingers</button></div>
+    <p id="preview-help" class="preview-help"><span id="drag-hint">Swipe to switch. Drag, pause, then release to browse.</span><br><span id="input-hint">One finger or mouse here. You can also try three-finger touch.</span></p>
     <noscript><p>The interactive sketch needs JavaScript. You can still <a href="#install">read the native install guide</a>.</p></noscript>
   </div>
 </section>
@@ -50,7 +51,7 @@
 </section>
 <section class="story wrap" aria-labelledby="why-title">
   <p class="eyebrow">The question behind it</p>
-  <div class="story-body"><h2 id="why-title">Less visiting the list.<br>More staying in<br><em>the conversation.</em></h2><div><p>I kept moving between chats and wondering why returning had to mean navigating back to a list.</p><p>Threefold is a way to try another answer. It puts the movement on the conversation itself: pull it aside, glimpse where you are going, or stop and see the whole stack.</p><p>It is an experiment to feel on a phone. The distance, shrinking, spring, activity markers and haptics are all adjustable. The point is to find out whether this feels easier.</p><p class="aside">The sketch above uses real prototype screenshots. Its motion runs in the browser; native touch recognition and haptics need the iPhone builds.</p></div></div>
+  <div class="story-body"><h2 id="why-title">Less visiting the list.<br>More staying in<br><em>the conversation.</em></h2><div><p>I kept moving between chats and wondering why returning had to mean navigating back to a list.</p><p>Threefold is a way to try another answer. It puts the movement on the conversation itself: pull it aside, glimpse where you are going, or stop and see the whole stack.</p><p>It is an experiment to feel on a phone. The distance, shrinking, spring, activity markers and haptics are all adjustable. The point is to find out whether this feels easier.</p><p class="aside">The sketch above uses real prototype screenshots. Try three-finger touch in Safari on your iPhone; iOS can reserve some gestures for system controls. The native builds add UIKit touch handling and haptics.</p></div></div>
 </section>
 <section class="install wrap" id="install" aria-labelledby="install-title">
   <div class="section-top"><div><p class="eyebrow">Take it out of the browser</p><h2 id="install-title">Try it on your iPhone.</h2></div><p>A Mac with Xcode 26+.<br>An iPhone with iOS 17+.<br>Your own Apple Account for signing.</p></div>
@@ -60,7 +61,7 @@
 <section class="questions wrap" aria-labelledby="questions-title"><h2 id="questions-title">A few useful details.</h2><div>
   <details><summary>Can I try it without a Mac?</summary><p>Yes: use the browser sketch above to explore the idea. Installing the native builds currently needs Xcode on a Mac. There is no ready-to-install public iPhone package yet.</p></details>
   <details><summary>Does it use my real chats?</summary><p>No. Both demos contain fictional conversations. Messages you enter, drafts, reading position and settings stay in each app’s local storage. No account or server is involved.</p></details>
-  <details><summary>How do I open the stack?</summary><p>In the native app, drag about a finger-length with three fingers, slow down while the chat is shrunk, then lift gently. A quick flick switches directly. You can also tap the indicator on the right. In the open stack, browse with one finger and tap a card.</p></details>
+  <details><summary>How do I open the stack?</summary><p>In Safari on your iPhone, use the preview’s 3 fingers option. Place all three fingers inside the phone, drag down, pause briefly while the chat is small, then release when the hint says “Release to browse the stack.” An ordinary swipe switches directly. Browse the open stack with one finger and tap a card. The native apps also have a right-edge indicator to open the stack.</p></details>
   <details><summary>What can I change?</summary><p>Hold the conversation title or tap the stack’s sliders. Seventeen saved controls let you tune card size, spacing, corners, spring, speed, gesture thresholds, indicators, activity, haptics and fingertip dots.</p></details>
   <details><summary>What about accessibility gestures?</summary><p>With VoiceOver enabled, the native custom three-finger recognizer is disabled. The visible indicator, menus and accessibility actions still offer navigation. iOS Zoom also uses three-finger gestures. The browser sketch has buttons and keyboard controls: Arrow Down for older, Arrow Up for newer, and Escape to leave the stack.</p></details>
 </div></section>

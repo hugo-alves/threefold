@@ -83,7 +83,9 @@ If your Mac’s default developer directory points to Command Line Tools, select
 
 ## Website and browser sketch
 
-The website explains the idea and lets anyone explore its movement without installing anything. It uses real native prototype screenshots. One finger or a mouse drives this **browser sketch**; the native apps use three fingers. The browser cannot reproduce iOS touch recognition or haptic feel.
+The website explains the idea and lets anyone explore its movement without installing anything. It uses real native prototype screenshots. On a multitouch phone, the **browser sketch** defaults to three-finger switching: swipe down for an older chat, or pause while the chat is shrunk and release to browse the stack. One finger scrolls the page or the open stack. A one-finger fallback and mouse/keyboard controls remain available.
+
+[Try three-finger touch in Safari on your iPhone](https://threefold.isanexperiment.com/?touch=3#preview). Start all three fingers inside the preview. iOS system gestures can take priority; use the visible buttons or the **1 finger** option if needed. Browser touch emulation does not establish physical iPhone feel. The native builds add UIKit touch handling, editable sample conversations and haptics.
 
 ```sh
 npm start

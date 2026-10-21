@@ -1,5 +1,5 @@
-import {SessionHistory, historyStep, cardScaleAt, defaultSettings} from './history.js';
-import {PreviewDrag, dragSettings, dragOutcome} from './drag.js';
+import {SessionHistory, ThreeFingerGesture, historyStep, cardScaleAt, defaultSettings} from './history.js';
+import {PreviewDrag, dragSettings, dragOutcome, defaultTouchMode} from './drag.js';
 import {galleries} from './gallery.js';
 
 const stage = document.querySelector('#stage');
@@ -14,7 +14,10 @@ const help = document.querySelector('#preview-help');
 const demoLabel = document.querySelector('#demo-label');
 const dragHint = document.querySelector('#drag-hint');
 const dragStatus = document.querySelector('#drag-status');
-const idleHint = 'Swipe to switch. Drag, pause, then release to browse.';
+const inputHint = document.querySelector('#input-hint');
+const touchControls = document.querySelector('#touch-controls');
+let touchMode = defaultTouchMode(navigator.maxTouchPoints,matchMedia('(pointer: coarse)').matches,new URLSearchParams(location.search).get('touch'));
+const idleHint = () => touchMode===3?'Three fingers to switch. Pause, then release to browse.':'Swipe to switch. Drag, pause, then release to browse.';
 const histories = Object.fromEntries(Object.entries(galleries).map(([key, entries]) => [key,new SessionHistory(entries.map(([id])=>id))]));
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 let mode = 'chats';
@@ -30,13 +33,17 @@ const title = id => galleries[mode].find(([key])=>key===id)?.[1] ?? '';
 
 function updateControls() {
   const h = history();
-  older.disabled = busy || overview || !h.destination(-1);
-  newer.disabled = busy || overview || !h.destination(1);
-  watch.disabled = busy || overview;
-  browse.disabled = busy || overview;
+  older.disabled = busy || !!drag || overview || !h.destination(-1);
+  newer.disabled = busy || !!drag || overview || !h.destination(1);
+  watch.disabled = busy || !!drag || overview;
+  browse.disabled = busy || !!drag || overview;
   document.querySelectorAll('[data-mode]').forEach(button => {
-    button.disabled = busy;
+    button.disabled = busy || !!drag;
     button.setAttribute('aria-pressed',String(button.dataset.mode===mode));
+  });
+  document.querySelectorAll('button[data-fingers]').forEach(button=>{
+    button.disabled=busy || !!drag;
+    button.setAttribute('aria-pressed',String(Number(button.dataset.fingers)===touchMode));
   });
   position.value = `${title(h.current)} · ${h.cursor+1} / ${h.entries.length}`;
   stage.setAttribute('aria-label',overview ? 'Conversation stack. Choose a chat.' : `${title(h.current)}. Drag to explore conversation history.`);
@@ -157,8 +164,8 @@ function closeOverview(index=history().cursor,focusTarget=overviewTrigger) {
   if(busy || !overview) return;
   history().select(index); overview=false;
   stage.classList.remove('overview'); stage.scrollTop=0; close.hidden=true;
-  help.replaceChildren(dragHint,document.createElement('br'),'One finger or mouse here. Three fingers in the native app.');
-  dragHint.textContent=idleHint;
+  help.replaceChildren(dragHint,document.createElement('br'),inputHint);
+  dragHint.textContent=idleHint();
   arrange(); updateControls();
   const returnTo=focusTarget?.isConnected && !focusTarget.disabled?focusTarget:stage;
   returnTo.focus({preventScroll:true});
@@ -176,36 +183,48 @@ function updateDragHint() {
   else if(!target && Math.abs(sample.distance)>12) dragHint.textContent=step<0?'You’re at the oldest conversation':'You’re at the newest conversation';
   else if(Math.abs(sample.distance)>=drag.settings.overviewStart && Math.abs(sample.distance)<=drag.settings.overviewEnd) dragHint.textContent='Release to switch · pause to browse';
   else if(outcome==='switch') dragHint.textContent=`Release to open ${title(target)}`;
-  else dragHint.textContent=idleHint;
+  else dragHint.textContent=idleHint();
   dragStatus.textContent=dragHint.textContent;
 }
 
-stage.addEventListener('pointerdown',event=>{
-  if(busy || overview || event.button!==0 || drag) return;
+function beginDrag(id,y,time,source) {
+  if(busy || overview || drag) return false;
   const settings=dragSettings(stage.clientWidth,stage.clientHeight);
-  drag={id:event.pointerId,track:new PreviewDrag(event.clientY,event.timeStamp),settings,dy:0,pauseTimer:null};
+  drag={id,source,track:new PreviewDrag(y,time),settings,dy:0,pauseTimer:null};
   dragStatus.textContent='';
-  stage.setPointerCapture(event.pointerId); stage.classList.add('dragging');
-});
-stage.addEventListener('pointermove',event=>{
-  if(!drag || event.pointerId!==drag.id) return;
-  drag.track.move(event.clientY,event.timeStamp);
+  stage.classList.add('dragging');
+  updateControls();
+  return true;
+}
+
+function moveDrag(y,time) {
+  drag.track.move(y,time);
   const progress=Math.max(-1.04,Math.min(1.04,drag.track.distance/drag.settings.travel));
   drag.dy=progress*(stage.clientHeight+defaultSettings.cardSpacing);
   arrange(drag.dy);
   updateDragHint();
   clearTimeout(drag.pauseTimer);
-  drag.pauseTimer=setTimeout(updateDragHint,Math.max(0,drag.settings.pause-drag.track.sample(event.timeStamp).heldFor)+16);
+  drag.pauseTimer=setTimeout(updateDragHint,Math.max(0,drag.settings.pause-drag.track.sample(time).heldFor)+16);
+}
+
+stage.addEventListener('pointerdown',event=>{
+  if(event.button!==0 || (event.pointerType==='touch' && touchMode===3)) return;
+  if(!beginDrag(event.pointerId,event.clientY,event.timeStamp,'pointer')) return;
+  stage.setPointerCapture(event.pointerId); stage.classList.add('dragging');
 });
-async function release(event,cancelled=false) {
-  if(!drag || event.pointerId!==drag.id) return;
+stage.addEventListener('pointermove',event=>{
+  if(drag?.source!=='pointer' || event.pointerId!==drag.id) return;
+  moveDrag(event.clientY,event.timeStamp);
+});
+async function finishDrag(time,cancelled=false) {
+  if(!drag) return;
   const {dy,track,settings,pauseTimer}=drag;
-  const sample=track.sample(event.timeStamp);
+  const sample=track.sample(time);
   const outcome=cancelled?'cancel':dragOutcome(sample,settings);
   clearTimeout(pauseTimer);
   drag=null; stage.classList.remove('dragging');
   delete stage.dataset.intent;
-  dragHint.textContent=idleHint;
+  dragHint.textContent=idleHint();
   const step=historyStep(sample.distance);
   if(outcome==='overview') { openOverview(); return; }
   const commit=outcome==='switch' && history().destination(step);
@@ -215,10 +234,60 @@ async function release(event,cancelled=false) {
   busy=false;
   arrange(); updateControls();
 }
+function release(event,cancelled=false) {
+  if(drag?.source==='pointer' && event.pointerId===drag.id) finishDrag(event.timeStamp,cancelled);
+}
 stage.addEventListener('pointerup',event=>release(event));
 stage.addEventListener('pointercancel',event=>release(event,true));
-stage.addEventListener('lostpointercapture',event=>{ if(drag) release(event,true); });
-window.addEventListener('blur',()=>{ if(introRun) stopIntro(); clearTimeout(drag?.pauseTimer); drag=null; stage.classList.remove('dragging'); delete stage.dataset.intent; dragHint.textContent=idleHint; arrange(); });
+stage.addEventListener('lostpointercapture',event=>release(event,true));
+
+// Touch Events keep the three-finger chord separate from one-finger scrolling.
+// Prevent Safari's default movement only once all three touches belong here.
+let touchTime=0;
+const threeFingers=new ThreeFingerGesture({
+  begin:()=>beginDrag('three-fingers',0,touchTime,'touch'),
+  move:dy=>{if(drag?.source==='touch') moveDrag(dy,touchTime);},
+  end:(_dy,_velocity,cancelled)=>{if(drag?.source==='touch') finishDrag(touchTime,cancelled);},
+});
+const points=event=>Array.from(event.touches,t=>({id:t.identifier,x:t.clientX,y:t.clientY}));
+stage.addEventListener('touchstart',event=>{
+  if(touchMode!==3 || overview) return;
+  touchTime=event.timeStamp;
+  if(Array.from(event.touches).some(t=>!stage.contains(t.target))) {threeFingers.cancel();return;}
+  if(threeFingers.start(points(event),touchTime) && event.cancelable) event.preventDefault();
+},{passive:false});
+stage.addEventListener('touchmove',event=>{
+  if(touchMode!==3 || overview) return;
+  touchTime=event.timeStamp;
+  if(threeFingers.move(points(event),touchTime) && event.cancelable) event.preventDefault();
+},{passive:false});
+stage.addEventListener('touchend',event=>{
+  touchTime=event.timeStamp;
+  const active=threeFingers.active;
+  threeFingers.end(points(event),touchTime);
+  if(active && event.cancelable) event.preventDefault();
+},{passive:false});
+stage.addEventListener('touchcancel',event=>{
+  touchTime=event.timeStamp;
+  threeFingers.cancel();
+  if(!event.touches.length) threeFingers.reset();
+});
+stage.addEventListener('gesturestart',event=>{if(threeFingers.active && event.cancelable) event.preventDefault();},{passive:false});
+window.addEventListener('blur',()=>{ if(introRun) stopIntro(); clearTimeout(drag?.pauseTimer); drag=null; threeFingers.reset(); stage.classList.remove('dragging'); delete stage.dataset.intent; dragHint.textContent=idleHint(); arrange(); updateControls(); });
+
+function updateTouchMode() {
+  stage.dataset.fingers=String(touchMode);
+  touchControls.hidden=!(navigator.maxTouchPoints || new URLSearchParams(location.search).has('touch'));
+  dragHint.textContent=idleHint();
+  inputHint.textContent=touchMode===3?'One finger scrolls. Start all three fingers inside the preview.':'One finger or mouse here. You can also try three-finger touch.';
+  updateControls();
+}
+document.querySelectorAll('button[data-fingers]').forEach(button=>button.addEventListener('click',()=>{
+  if(busy || drag) return;
+  threeFingers.reset();
+  touchMode=Number(button.dataset.fingers);
+  updateTouchMode();
+}));
 stage.addEventListener('keydown',event=>{
   if(event.key==='Escape') { closeOverview(); event.preventDefault(); }
   if(!overview && ['ArrowDown','ArrowUp'].includes(event.key)) {
@@ -244,6 +313,7 @@ watch.addEventListener('click',async()=>{
 new ResizeObserver(()=>{if(!drag && !busy) arrange();}).observe(stage);
 // Any input takes over immediately, including controls while the preview runs.
 document.querySelector('.preview').addEventListener('pointerdown',stopIntro,{capture:true});
+document.querySelector('.preview').addEventListener('touchstart',stopIntro,{capture:true,passive:true});
 document.querySelector('.preview').addEventListener('keydown',stopIntro,{capture:true});
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden && introRun) stopIntro();
@@ -251,6 +321,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',()=>{ if(introRun) stopIntro(); });
 render();
+updateTouchMode();
 stage.dataset.demo='ready';
 function queueIntro() {
   const rect=stage.getBoundingClientRect();

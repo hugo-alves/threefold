@@ -26,4 +26,10 @@ h1{font-size:clamp(60px,5.8vw,78px)}
 .drag-status{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);z-index:24;width:max-content;max-width:90%;padding:8px 13px;border:1px solid #ffffff30;border-radius:22px;background:#20231eef;box-shadow:0 4px 18px #0003;color:#fff;font-size:10px;line-height:1.4;text-align:center;pointer-events:none;opacity:0;transition:opacity .12s}
 .dragging .drag-status:not(:empty){opacity:1}
 .stage[data-intent=overview] .drag-status{border-color:#e7c5b3;color:#ffe0c8}
+.stage[data-fingers="3"]{touch-action:pan-y pinch-zoom}
+.stage,.preview-card{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.touch-controls{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0;font-size:10px;color:#624b3c}
+.touch-controls[hidden]{display:none}
+.touch-controls button{border:1px solid transparent;border-radius:18px;background:none;color:inherit;padding:7px 12px;min-height:36px;font-size:11px}
+.touch-controls button[aria-pressed=true]{border-color:#be9783;background:#fff5;color:#49372c}
 @media(max-width:680px){.hero-copy>.intro,.hero-actions>.text-link{display:none}.hero-actions{margin-top:8px}.hero{gap:20px}}
